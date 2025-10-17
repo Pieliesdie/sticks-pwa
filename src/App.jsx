@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './index.css';
+import './styles.css';
 
 export default function SticksApp() {
   const STORAGE_KEY = 'smoked_sticks_entries_v3';
@@ -67,13 +67,23 @@ export default function SticksApp() {
           ) : (
             grouped.map(([day, list]) => {
               const collapsed = collapsedDays[day];
+
+              // Подсчёт по часам
+              const hourCounts = Array(24).fill(0);
+              list.forEach(e => {
+                const hour = new Date(e.iso).getHours();
+                hourCounts[hour]++;
+              });
+              const maxHourCount = Math.max(...hourCounts, 1);
+              const currentHour = new Date().getHours();
+
               return (
                 <div key={day} className="day-group">
                   <button
                     className={`day-header ${collapsed ? 'collapsed' : ''}`}
                     onClick={() => toggleDay(day)}
                   >
-                    <span>{day}. Выкурено: {list.length}</span>
+                    <span>{day}. Выкуренно: {list.length}</span>
                     <span
                       className="arrow"
                       style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
@@ -82,26 +92,42 @@ export default function SticksApp() {
                     </span>
                   </button>
 
-                  <div className={`day-entries ${collapsed ? 'collapsed' : ''}`}>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Время (локальное)</th>
-                          <th>ISO</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {list.map((e, i) => (
-                          <tr key={e.id}>
-                            <td>{list.length - i}</td>
-                            <td>{e.pretty}</td>
-                            <td>{e.iso}</td>
-                          </tr>
+                  {!collapsed && (
+                    <>
+                      {/* Гистограмма по часам */}
+                      <div className="day-histogram">
+                        {hourCounts.map((count, hour) => (
+                          <div key={hour} className="hour-bar-container">
+                            <div
+                              className={`hour-bar ${hour === currentHour ? 'current-hour' : ''}`}
+                              style={{ height: `${(count / maxHourCount) * 80}px` }}
+                              title={`${hour}:00 — ${count} стиков`}
+                            ></div>
+                            <div className="hour-label">{hour}</div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </div>
+                      {/* Таблица записей */}
+                      <div className={`day-entries`}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Время (локальное)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {list.map((e, i) => (
+                              <tr key={e.id}>
+                                <td>{list.length - i}</td>
+                                <td>{e.pretty}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })
