@@ -1,0 +1,155 @@
+/* --- Основной фон и контейнер --- */
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(to bottom, #f0f4f8, #f9fafb);
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* --- Карточка приложения --- */
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  padding: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* --- Заголовок --- */
+.card h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
+/* --- Кнопки и счетчик --- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  background: #f3f4f6;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+button:active {
+  background: #e5e7eb;
+}
+
+button.secondary {
+  border-color: #9ca3af;
+  color: #4b5563;
+}
+
+.counter {
+  margin-left: auto;
+  color: #6b7280;
+}
+
+/* --- Список записей --- */
+.entries {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+}
+
+/* --- Группы по дням --- */
+.day-group {
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+/* Заголовок дня */
+.day-header {
+  width: 100%;
+  text-align: left;
+  background: #f9fafb;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: background 0.2s;
+}
+
+.day-header:hover {
+  background: #f3f4f6;
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.3s;
+}
+
+/* --- Скрытие / раскрытие --- */
+.day-entries {
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+  padding: 1rem;
+  max-height: 1000px; /* достаточно большое значение для раскрытия */
+}
+
+.day-entries.collapsed {
+  max-height: 0;
+  padding: 0 1rem;
+}
+
+/* --- Таблица --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th, td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+tr:hover {
+  background: #f3f4f6;
+}
