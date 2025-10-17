@@ -2,7 +2,7 @@
 body, html, #root {
   height: 100%;
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   background: linear-gradient(to bottom, #f0f4f8, #f9fafb);
 }
 
@@ -21,7 +21,14 @@ body, html, #root {
   border-radius: 1rem;
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   padding: 2rem;
+  transform: translateY(10px);
+  opacity: 0;
+  animation: cardAppear 0.5s forwards ease-out;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes cardAppear {
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .card:hover {
@@ -52,16 +59,18 @@ button {
   border: 1px solid #d1d5db;
   background: #fff;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 button:hover {
   background: #f3f4f6;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transform: scale(1.05);
 }
 
 button:active {
   background: #e5e7eb;
+  transform: scale(0.98);
 }
 
 button.secondary {
@@ -120,36 +129,74 @@ button.secondary {
   transition: transform 0.3s;
 }
 
-/* --- Скрытие / раскрытие --- */
-.day-entries {
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  overflow: hidden;
-  padding: 1rem;
-  max-height: 1000px; /* достаточно большое значение для раскрытия */
+/* --- Гистограмма по часам --- */
+.day-histogram {
+  display: flex;
+  gap: 2px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-end;
+  height: 80px;
 }
 
-.day-entries.collapsed {
-  max-height: 0;
-  padding: 0 1rem;
+.hour-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1; /* равномерно распределяем столбцы */
+}
+
+.hour-bar {
+  width: 100%;
+  background-color: #3b82f6;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.5s ease;
+}
+
+.hour-bar.current-hour {
+  background-color: #ef4444;
+}
+
+.hour-label {
+  font-size: 0.6rem;
+  margin-top: 2px;
+  color: #6b7280;
 }
 
 /* --- Таблица --- */
-table {
-  width: 100%;
+.day-entries table {
+  width: 100%;          /* растягиваем на всю ширину */
   border-collapse: collapse;
+  table-layout: fixed;  /* столбцы равномерно распределяются */
   font-size: 0.9rem;
 }
 
-th, td {
+.day-entries th, .day-entries td {
   padding: 0.5rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word;
 }
 
-tr:nth-child(even) {
-  background: #f9fafb;
+.day-entries th {
+  background-color: #f9fafb;
 }
 
-tr:hover {
-  background: #f3f4f6;
+.day-entries tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+.day-entries tr:hover {
+  background-color: #e5e7eb;
+}
+
+/* --- Анимация появления строк --- */
+.day-entries tbody tr {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: rowAppear 0.3s forwards ease-out;
+}
+
+@keyframes rowAppear {
+  to { opacity: 1; transform: translateY(0); }
 }

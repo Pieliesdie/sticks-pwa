@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './styles.css';
+import './index.css';
 
 export default function SticksApp() {
   const STORAGE_KEY = 'smoked_sticks_entries_v3';
@@ -73,8 +73,7 @@ export default function SticksApp() {
                     className={`day-header ${collapsed ? 'collapsed' : ''}`}
                     onClick={() => toggleDay(day)}
                   >
-                    <span>{day}</span>
-                    <span>{list.length}</span>
+                    <span>{day}. Выкурено: {list.length}</span>
                     <span
                       className="arrow"
                       style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
