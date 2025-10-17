@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './styles.css';
 
 export default function SticksApp() {
-  const STORAGE_KEY = 'smoked_sticks_entries_v3';
+  const STORAGE_KEY = 'smoked_sticks_entries_v7';
   const [entries, setEntries] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -13,6 +13,7 @@ export default function SticksApp() {
   });
 
   const [collapsedDays, setCollapsedDays] = useState({});
+  const [selectedHourMap, setSelectedHourMap] = useState({}); // выбранные часы по дню
 
   useEffect(() => {
     try {
@@ -68,7 +69,7 @@ export default function SticksApp() {
             grouped.map(([day, list]) => {
               const collapsed = collapsedDays[day];
 
-              // Подсчёт по часам
+              // подсчёт по часам
               const hourCounts = Array(24).fill(0);
               list.forEach(e => {
                 const hour = new Date(e.iso).getHours();
@@ -76,6 +77,7 @@ export default function SticksApp() {
               });
               const maxHourCount = Math.max(...hourCounts, 1);
               const currentHour = new Date().getHours();
+              const selectedHour = selectedHourMap[day];
 
               return (
                 <div key={day} className="day-group">
@@ -83,32 +85,39 @@ export default function SticksApp() {
                     className={`day-header ${collapsed ? 'collapsed' : ''}`}
                     onClick={() => toggleDay(day)}
                   >
-                    <span>{day}. Выкуренно: {list.length}</span>
-                    <span
-                      className="arrow"
-                      style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
-                    >
-                      ▼
-                    </span>
+                    <span>{day}. Выкурено: {list.length}</span>
+                    <span className="arrow" style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}>▼</span>
                   </button>
 
                   {!collapsed && (
-                    <>
+                    <div className="day-content">
                       {/* Гистограмма по часам */}
                       <div className="day-histogram">
-                        {hourCounts.map((count, hour) => (
-                          <div key={hour} className="hour-bar-container">
-                            <div
-                              className={`hour-bar ${hour === currentHour ? 'current-hour' : ''}`}
-                              style={{ height: `${(count / maxHourCount) * 80}px` }}
-                              title={`${hour}:00 — ${count} стиков`}
-                            ></div>
-                            <div className="hour-label">{hour}</div>
-                          </div>
-                        ))}
+                        {hourCounts.map((count, hour) => {
+                          const isSelected = selectedHour === hour;
+                          return (
+                            <div key={hour} className="hour-bar-container">
+                              <div
+                                className={`hour-bar ${hour === currentHour ? 'current-hour' : ''} ${isSelected ? 'selected' : ''}`}
+                                style={{ height: `${(count / maxHourCount) * 80}px` }}
+                                onClick={() => setSelectedHourMap(prev => ({
+                                  ...prev,
+                                  [day]: prev[day] === hour ? null : hour
+                                }))}
+                              />
+                              {isSelected && count > 0 && (
+                                <div className="tooltip">
+                                  {hour}:00 — {count} стиков
+                                </div>
+                              )}
+                              <div className="hour-label">{hour}</div>
+                            </div>
+                          );
+                        })}
                       </div>
+
                       {/* Таблица записей */}
-                      <div className={`day-entries`}>
+                      <div className="day-entries">
                         <table>
                           <thead>
                             <tr>
@@ -126,7 +135,7 @@ export default function SticksApp() {
                           </tbody>
                         </table>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               );
