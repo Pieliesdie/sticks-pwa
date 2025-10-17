@@ -107,7 +107,7 @@ export default function SticksApp() {
                               />
                               {isSelected && count > 0 && (
                                 <div className="tooltip">
-                                  {hour}:00 — {count} стиков
+                                  {count}
                                 </div>
                               )}
                               <div className="hour-label">{hour}</div>
@@ -121,7 +121,7 @@ export default function SticksApp() {
                         <table>
                           <thead>
                             <tr>
-                              <th>#</th>
+                              <th>№</th>
                               <th>Время (локальное)</th>
                             </tr>
                           </thead>
