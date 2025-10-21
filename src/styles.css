@@ -8,6 +8,17 @@ html,
   background: linear-gradient(to bottom, #f0f4f8, #f9fafb);
 }
 
+.action-cell {
+  text-align: right;   /* прижать к правому краю */
+  vertical-align: middle; /* по центру строки */
+}
+
+.small-button {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -76,7 +87,6 @@ html,
   background: #fff;
   padding: 2rem;
   border-radius: 1rem;
-  width: 320px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   transform: translateY(20px) scale(0.95);
   opacity: 0;
@@ -330,15 +340,16 @@ button.secondary {
   table-layout: fixed;
   font-size: 0.9rem;
 }
-
+.left-align {
+  text-align: left !important;
+}
 .day-entries th,
 .day-entries td {
   padding: 0.5rem;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #e5e7eb;
   word-wrap: break-word;
 }
-
 .day-entries th {
   background-color: #f9fafb;
   position: sticky;

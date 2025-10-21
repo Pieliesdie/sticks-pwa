@@ -127,12 +127,13 @@ export default function SticksApp() {
                     onChange={e => setCustomDate(e.target.value)}
                   />
                 </label>
-                <label>
+                <label style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                   Время:
                   <input
                     type="time"
                     value={customTime}
                     onChange={e => setCustomTime(e.target.value)}
+                    style={{ width: '100%' }}
                   />
                 </label>
               </div>
@@ -195,15 +196,24 @@ export default function SticksApp() {
                         <table>
                           <thead>
                             <tr>
-                              <th>№</th>
+                              <th className='left-align'>№</th>
                               <th>Время (локальное)</th>
+                              <th>Удалить</th>
                             </tr>
                           </thead>
                           <tbody>
                             {list.map((e, i) => (
                               <tr key={e.id}>
-                                <td>{list.length - i}</td>
+                                <td className='left-align'>{list.length - i}</td>
                                 <td>{e.pretty}</td>
+                                <td className="action-cell">
+                                  <button
+                                    className="secondary small-button"
+                                    onClick={() => setEntries(prev => prev.filter(entry => entry.id !== e.id))}
+                                  >
+                                    ❌
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
