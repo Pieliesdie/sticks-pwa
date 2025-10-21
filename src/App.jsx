@@ -119,23 +119,18 @@ export default function SticksApp() {
             <div className="modal">
               <h2>Выберите дату и время</h2>
               <div className="modal-controls">
-                <label>
-                  Дата:
-                  <input
-                    type="date"
-                    value={customDate}
-                    onChange={e => setCustomDate(e.target.value)}
-                  />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                  Время:
-                  <input
-                    type="time"
-                    value={customTime}
-                    onChange={e => setCustomTime(e.target.value)}
-                    style={{ width: '100%' }}
-                  />
-                </label>
+                <label>Дата:</label>
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={e => setCustomDate(e.target.value)}
+                />
+                <label>Время:</label>
+                <input
+                  type="time"
+                  value={customTime}
+                  onChange={e => setCustomTime(e.target.value)}
+                />
               </div>
               <div className="modal-buttons">
                 <button onClick={handleAddCustom}>Добавить</button>
@@ -197,16 +192,16 @@ export default function SticksApp() {
                           <thead>
                             <tr>
                               <th className='left-align'>№</th>
-                              <th>Время (локальное)</th>
-                              <th>Удалить</th>
+                              <th>Время</th>
+                              <th></th>
                             </tr>
                           </thead>
                           <tbody>
                             {list.map((e, i) => (
                               <tr key={e.id}>
                                 <td className='left-align'>{list.length - i}</td>
-                                <td>{e.pretty}</td>
-                                <td className="action-cell">
+                                <td>{e.pretty.split(',')[1]?.trim().slice(0, 5)}</td>
+                                <td className="action-cell right-align">
                                   <button
                                     className="secondary small-button"
                                     onClick={() => setEntries(prev => prev.filter(entry => entry.id !== e.id))}

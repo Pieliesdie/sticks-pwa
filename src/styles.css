@@ -2,15 +2,17 @@
 body,
 html,
 #root {
-  height: 100vh;
+  height: 95vh;
   margin: 0;
   font-family: 'Roboto', system-ui, sans-serif;
   background: linear-gradient(to bottom, #f0f4f8, #f9fafb);
 }
 
 .action-cell {
-  text-align: right;   /* прижать к правому краю */
-  vertical-align: middle; /* по центру строки */
+  text-align: right;
+  /* прижать к правому краю */
+  vertical-align: middle;
+  /* по центру строки */
 }
 
 .small-button {
@@ -85,12 +87,17 @@ html,
 
 .modal {
   background: #fff;
+  width: 80%;
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   transform: translateY(20px) scale(0.95);
   opacity: 0;
   transition: all 0.35s ease;
+}
+
+.modal h2 {
+  text-align: center;
 }
 
 .modal-overlay.show .modal {
@@ -102,13 +109,16 @@ html,
 .modal-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin: 1.2rem 0;
+  align-items: left;
+  gap: 1rem;
+  margin: 1.2rem 1.2rem 1.2rem 1.2rem;
 }
 
 .modal-controls label {
   display: flex;
   flex-direction: column;
+  width: 90%;
+  align-self: center;
   font-weight: 500;
   color: #374151;
 }
@@ -116,7 +126,8 @@ html,
 .modal-controls input,
 .react-time-picker input,
 .react-datepicker__input-container input {
-  width: 100%;
+  width: 90%;
+  align-self: center;
   padding: 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -135,7 +146,7 @@ html,
 /* Кнопки в модалке */
 .modal-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -340,9 +351,15 @@ button.secondary {
   table-layout: fixed;
   font-size: 0.9rem;
 }
+
 .left-align {
   text-align: left !important;
 }
+
+.right-align {
+  text-align: right !important;
+}
+
 .day-entries th,
 .day-entries td {
   padding: 0.5rem;
@@ -350,6 +367,7 @@ button.secondary {
   border-bottom: 1px solid #e5e7eb;
   word-wrap: break-word;
 }
+
 .day-entries th {
   background-color: #f9fafb;
   position: sticky;
