@@ -1,39 +1,170 @@
 /* --- Основной фон и контейнер --- */
-body, html, #root {
-  height: 100%;
+body,
+html,
+#root {
+  height: 100vh;
   margin: 0;
   font-family: 'Roboto', system-ui, sans-serif;
   background: linear-gradient(to bottom, #f0f4f8, #f9fafb);
 }
 
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-button {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  /* Анимация выпадения */
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+}
+
+.dropdown-menu.show {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+.dropdown-menu button {
+  padding: 1rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background: #f0f0f0;
+}
+
+/* --- Модальное окно (обновлённое) --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  transition: all 0.35s ease;
+}
+
+.modal-overlay.show .modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Контейнер выбора даты/времени */
+.modal-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.2rem 0;
+}
+
+.modal-controls label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: #374151;
+}
+
+.modal-controls input,
+.react-time-picker input,
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-controls input:focus,
+.react-time-picker input:focus,
+.react-datepicker__input-container input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  outline: none;
+}
+
+/* Кнопки в модалке */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.modal-buttons button {
+  min-width: 90px;
+}
+
+.modal-buttons .secondary {
+  background: #e5e7eb;
+}
+
 .app-container {
-  min-height: 100vh;
+  min-height: 90vh;
   display: flex;
   justify-content: center;
   padding: 2rem;
 }
 
-/* --- Карточка приложения --- */
+/* --- Карточка приложения с анимацией при загрузке --- */
 .card {
   width: 100%;
   max-width: 600px;
   background: #fff;
   border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   padding: 2rem;
-  transform: translateY(10px);
+  transform: translateY(20px);
   opacity: 0;
-  animation: cardAppear 0.5s forwards ease-out;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-@keyframes cardAppear {
-  to { transform: translateY(0); opacity: 1; }
+.card.show {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* --- Заголовок --- */
@@ -64,8 +195,8 @@ button {
 
 button:hover {
   background: #f3f4f6;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: scale(1.01);
 }
 
 button:active {
@@ -86,7 +217,7 @@ button.secondary {
 /* --- Список записей --- */
 .entries {
   overflow-y: auto;
-  max-height: 80vh; /* увеличили высоту */
+  max-height: 80vh;
 }
 
 .empty {
@@ -101,7 +232,15 @@ button.secondary {
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transform: translateY(10px);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.day-group.show {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* Заголовок дня */
@@ -134,8 +273,7 @@ button.secondary {
 
 /* --- Контент дня --- */
 .day-content {
-  /* Занимает оставшуюся часть экрана */
-  max-height: calc(100vh - 250px); /* header + controls + отступы */
+  max-height: calc(100vh - 250px);
   overflow-y: auto;
   padding: 0.5rem 1rem;
 }
@@ -193,7 +331,8 @@ button.secondary {
   font-size: 0.9rem;
 }
 
-.day-entries th, .day-entries td {
+.day-entries th,
+.day-entries td {
   padding: 0.5rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
@@ -202,7 +341,7 @@ button.secondary {
 
 .day-entries th {
   background-color: #f9fafb;
-  position: sticky; /* фиксируем заголовок таблицы */
+  position: sticky;
   top: 0;
   z-index: 5;
 }
@@ -223,5 +362,8 @@ button.secondary {
 }
 
 @keyframes rowAppear {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

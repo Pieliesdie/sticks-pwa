@@ -3,37 +3,72 @@ import './styles.css';
 
 export default function SticksApp() {
   const STORAGE_KEY = 'smoked_sticks_entries_v7';
+
   const [entries, setEntries] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      // преобразуем ISO в локальные даты для фронта
+      return arr.map(e => ({
+        ...e,
+        date: new Date(e.iso),
+        pretty: new Date(e.iso).toLocaleString()
+      }));
     } catch {
       return [];
     }
   });
 
   const [collapsedDays, setCollapsedDays] = useState({});
-  const [selectedHourMap, setSelectedHourMap] = useState({}); // выбранные часы по дню
+  const [selectedHourMap, setSelectedHourMap] = useState({});
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customDate, setCustomDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [customTime, setCustomTime] = useState(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  });
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // запускаем анимацию при загрузке
+    const timer = setTimeout(() => setLoaded(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // сохраняем только iso
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    } catch {}
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.map(e => ({ iso: e.iso, id: e.id }))));
+    } catch { }
   }, [entries]);
 
-  function addNow() {
-    const now = new Date();
+  function addEntry(date) {
     const entry = {
       id: crypto?.randomUUID?.() ?? String(Date.now()),
-      iso: now.toISOString(),
-      pretty: now.toLocaleString(),
-      dayKey: now.toISOString().split('T')[0],
+      iso: date.toISOString(),
+      date,
+      pretty: date.toLocaleString()
     };
     setEntries(prev => [entry, ...prev]);
+    setMenuOpen(false);
+  }
+
+  function handleAddCustom() {
+    const [hours, minutes] = customTime.split(':').map(Number);
+    const [year, month, day] = customDate.split('-').map(Number);
+    const date = new Date(year, month - 1, day, hours, minutes);
+    if (!isNaN(date)) {
+      addEntry(date);
+      setShowCustomModal(false);
+    }
   }
 
   function clearAll() {
-    setEntries([]);
+    if (window.confirm('Вы уверены, что хотите удалить все записи?')) {
+      setEntries([]);
+    }
   }
 
   function toggleDay(day) {
@@ -43,8 +78,10 @@ export default function SticksApp() {
   function groupByDay(items) {
     const groups = {};
     for (const e of items) {
-      if (!groups[e.dayKey]) groups[e.dayKey] = [];
-      groups[e.dayKey].push(e);
+      const d = e.date;
+      const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (!groups[dayKey]) groups[dayKey] = [];
+      groups[dayKey].push(e);
     }
     return Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }
@@ -53,34 +90,75 @@ export default function SticksApp() {
 
   return (
     <div className="app-container">
-      <div className="card">
+      <div className={`card ${loaded ? 'show' : ''}`}>
         <h1>Выкуренные стики</h1>
 
         <div className="controls">
-          <button onClick={addNow}>Добавить запись</button>
+          {/* Подменю */}
+          <div className="dropdown" onMouseLeave={() => setMenuOpen(false)}>
+            <button className="dropdown-button" onClick={() => setMenuOpen(prev => !prev)}>
+              Добавить запись ▼
+            </button>
+            {menuOpen && (
+              <div className="dropdown-menu show">
+                <button onClick={() => addEntry(new Date())}>Текущее время</button>
+                <button onClick={() => { setShowCustomModal(true); setMenuOpen(false); }}>
+                  Указанное время
+                </button>
+              </div>
+            )}
+          </div>
+
           <button onClick={clearAll} className="secondary">Очистить</button>
           <div className="counter">Записей: {entries.length}</div>
         </div>
 
+        {/* Модальное окно */}
+        {showCustomModal && (
+          <div className="modal-overlay show">
+            <div className="modal">
+              <h2>Выберите дату и время</h2>
+              <div className="modal-controls">
+                <label>
+                  Дата:
+                  <input
+                    type="date"
+                    value={customDate}
+                    onChange={e => setCustomDate(e.target.value)}
+                  />
+                </label>
+                <label>
+                  Время:
+                  <input
+                    type="time"
+                    value={customTime}
+                    onChange={e => setCustomTime(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="modal-buttons">
+                <button onClick={handleAddCustom}>Добавить</button>
+                <button onClick={() => setShowCustomModal(false)} className="secondary">Отмена</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Группировка и гистограмма */}
         <div className="entries">
           {grouped.length === 0 ? (
             <div className="empty">Нет записей</div>
           ) : (
             grouped.map(([day, list]) => {
               const collapsed = collapsedDays[day];
-
-              // подсчёт по часам
               const hourCounts = Array(24).fill(0);
-              list.forEach(e => {
-                const hour = new Date(e.iso).getHours();
-                hourCounts[hour]++;
-              });
+              list.forEach(e => hourCounts[e.date.getHours()]++);
               const maxHourCount = Math.max(...hourCounts, 1);
               const currentHour = new Date().getHours();
               const selectedHour = selectedHourMap[day];
 
               return (
-                <div key={day} className="day-group">
+                <div key={day} className={`day-group ${loaded ? 'show' : ''}`}>
                   <button
                     className={`day-header ${collapsed ? 'collapsed' : ''}`}
                     onClick={() => toggleDay(day)}
@@ -91,7 +169,6 @@ export default function SticksApp() {
 
                   {!collapsed && (
                     <div className="day-content">
-                      {/* Гистограмма по часам */}
                       <div className="day-histogram">
                         {hourCounts.map((count, hour) => {
                           const isSelected = selectedHour === hour;
@@ -106,9 +183,7 @@ export default function SticksApp() {
                                 }))}
                               />
                               {isSelected && count > 0 && (
-                                <div className="tooltip">
-                                  {count}
-                                </div>
+                                <div className="tooltip">{count}</div>
                               )}
                               <div className="hour-label">{hour}</div>
                             </div>
@@ -116,7 +191,6 @@ export default function SticksApp() {
                         })}
                       </div>
 
-                      {/* Таблица записей */}
                       <div className="day-entries">
                         <table>
                           <thead>
