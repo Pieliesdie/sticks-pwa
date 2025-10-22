@@ -3,13 +3,13 @@ import './styles.css';
 
 export default function SticksApp() {
   const STORAGE_KEY = 'smoked_sticks_entries_v7';
+  const INTERVAL_KEY = 'sticks_interval_minutes';
 
   const [entries, setEntries] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const arr = JSON.parse(raw);
-      // преобразуем ISO в локальные даты для фронта
       return arr.map(e => ({
         ...e,
         date: new Date(e.iso),
@@ -29,20 +29,29 @@ export default function SticksApp() {
     const now = new Date();
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   });
+  const [intervalMinutes, setIntervalMinutes] = useState(() => {
+    const saved = localStorage.getItem(INTERVAL_KEY);
+    return saved ? Number(saved) : 60;
+  });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    // запускаем анимацию при загрузке
     const timer = setTimeout(() => setLoaded(true), 50);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // сохраняем только iso
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.map(e => ({ iso: e.iso, id: e.id }))));
-    } catch { }
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(entries.map(e => ({ iso: e.iso, id: e.id })))
+      );
+    } catch {}
   }, [entries]);
+
+  useEffect(() => {
+    localStorage.setItem(INTERVAL_KEY, String(intervalMinutes));
+  }, [intervalMinutes]);
 
   function addEntry(date) {
     const entry = {
@@ -71,6 +80,20 @@ export default function SticksApp() {
     }
   }
 
+  function checkInterval() {
+    if (entries.length === 0) {
+      alert('Нет записей');
+      return;
+    }
+    const last = new Date(entries.sort((a, b) => b.date - a.date)[0].iso);
+    const diffMin = (Date.now() - last.getTime()) / 60000;
+    if (diffMin >= intervalMinutes) {
+      alert(`Можно курнуть 🚬`);
+    } else {
+      alert(`Терпи еще ${Math.floor(intervalMinutes - diffMin)} минут 💪`);
+    }
+  }
+
   function toggleDay(day) {
     setCollapsedDays(prev => ({ ...prev, [day]: !prev[day] }));
   }
@@ -83,7 +106,10 @@ export default function SticksApp() {
       if (!groups[dayKey]) groups[dayKey] = [];
       groups[dayKey].push(e);
     }
-    return Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+
+    return Object.entries(groups)
+      .map(([day, list]) => [day, list.sort((a, b) => b.date - a.date)])
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }
 
   const grouped = groupByDay(entries);
@@ -94,7 +120,6 @@ export default function SticksApp() {
         <h1>Выкуренные стики</h1>
 
         <div className="controls">
-          {/* Подменю */}
           <div className="dropdown" onMouseLeave={() => setMenuOpen(false)}>
             <button className="dropdown-button" onClick={() => setMenuOpen(prev => !prev)}>
               Добавить запись ▼
@@ -110,10 +135,25 @@ export default function SticksApp() {
           </div>
 
           <button onClick={clearAll} className="secondary">Очистить</button>
+
+          <div className="interval-control">
+            <label>
+              Интервал:&nbsp;
+              <input
+                type="number"
+                min="1"
+                value={intervalMinutes}
+                onChange={e => setIntervalMinutes(Number(e.target.value))}
+                className="small-input"
+              />
+              мин
+            </label>
+            <button onClick={checkInterval}>Проверить</button>
+          </div>
+
           <div className="counter">Записей: {entries.length}</div>
         </div>
 
-        {/* Модальное окно */}
         {showCustomModal && (
           <div className="modal-overlay show">
             <div className="modal">
@@ -140,7 +180,6 @@ export default function SticksApp() {
           </div>
         )}
 
-        {/* Группировка и гистограмма */}
         <div className="entries">
           {grouped.length === 0 ? (
             <div className="empty">Нет записей</div>
