@@ -59,8 +59,8 @@ function AddModal({ open, onClose, onAdd }) {
           </div>
         </div>
         <div className="modal-buttons">
-          <button className="btn-text" onClick={onClose}>Отмена</button>
-          <button className="btn-filled" onClick={handle}>Добавить</button>
+          <button className="btn-text btn-round" onClick={onClose}>Отмена</button>
+          <button className="btn-filled btn-round" onClick={handle}>Добавить</button>
         </div>
       </div>
     </div>
@@ -70,16 +70,26 @@ function AddModal({ open, onClose, onAdd }) {
 // ── Home Page ─────────────────────────────────────────────────────────────────
 function HomePage({ entries, intervalMinutes, onAdd, showSnack }) {
   const [showModal, setShowModal] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(Date.now());
+    }, 1000); // обновление каждую секунду
+
+    return () => clearInterval(id);
+  }, []);
 
   const sorted = [...entries].sort((a, b) => b.date - a.date);
   const last = sorted[0] || null;
-  const diffMin = last ? (Date.now() - last.date.getTime()) / 60000 : null;
+  const diffMin = last ? (now - last.date.getTime()) / 60000 : null;
   const canSmoke = diffMin === null || diffMin >= intervalMinutes;
-  const remaining = diffMin !== null ? Math.max(0, Math.ceil(intervalMinutes - diffMin)) : 0;
-  const progress = diffMin !== null ? Math.min(diffMin / intervalMinutes, 1) : 1;
-
+  const remaining = diffMin !== null ? Math.max(0, Math.ceil(intervalMinutes - diffMin)) : 0; const progress = diffMin !== null ? Math.min(diffMin / intervalMinutes, 1) : 1;
+  const displayRemaining = remaining > intervalMinutes ? intervalMinutes : remaining;
+  
   const R = 52, C = 2 * Math.PI * R;
-  const dash = C * progress;
+  const progressClamped = Math.min(Math.max(progress, 0), 1);
+  const offset = C * (1 - progressClamped);
 
   const todayCount = entries.filter(e => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return e.date >= d;
@@ -90,7 +100,7 @@ function HomePage({ entries, intervalMinutes, onAdd, showSnack }) {
   function checkTimer() {
     if (!entries.length) { showSnack('Нет записей', '📭'); return; }
     if (canSmoke) showSnack('Можно курнуть! 🚬', '');
-    else showSnack(`Подожди ещё ${remaining} мин ⏳`, '');
+    else showSnack(`Подожди ещё ${displayRemaining} мин ⏳`, '');
   }
 
   return (
@@ -99,35 +109,36 @@ function HomePage({ entries, intervalMinutes, onAdd, showSnack }) {
       <div className="status-card">
         <div className="ring-wrap">
           <svg width="128" height="128" viewBox="0 0 128 128">
-            {/* фон (по желанию можно оставить или тоже скрыть) */}
             {!canSmoke && (
-              <circle
-                cx="64"
-                cy="64"
-                r={R}
-                fill="none"
-                stroke="var(--md-outline-variant)"
-                strokeWidth="12"
-              />
-            )}
+              <>
+                {/* фон */}
+                <circle
+                  cx="64"
+                  cy="64"
+                  r={R}
+                  fill="none"
+                  stroke="var(--md-outline-variant)"
+                  strokeWidth="12"
+                />
 
-            {/* прогресс — полностью скрываем */}
-            {!canSmoke && (
-              <circle
-                cx="64"
-                cy="64"
-                r={R}
-                fill="none"
-                stroke="var(--md-error)"
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeDasharray={`${dash} ${C}`}
-                strokeDashoffset={C * 0.25}
-                style={{
-                  transition:
-                    'stroke-dasharray 1.2s cubic-bezier(0,0,0,1), stroke .4s',
-                }}
-              />
+                {/* прогресс */}
+                <circle
+                  cx="64"
+                  cy="64"
+                  r={R}
+                  fill="none"
+                  stroke="var(--md-error)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={C}
+                  strokeDashoffset={offset}
+                  transform="rotate(-90 64 64)"
+                  style={{
+                    transition:
+                      'stroke-dashoffset 1.2s cubic-bezier(0,0,0,1), stroke .4s',
+                  }}
+                />
+              </>
             )}
           </svg>
 
@@ -136,7 +147,7 @@ function HomePage({ entries, intervalMinutes, onAdd, showSnack }) {
               {canSmoke ? '✅' : '⏳'}
             </span>
             <span className="ring-label">
-              {canSmoke ? 'Можно!' : `${remaining} мин`}
+              {canSmoke ? 'Можно!' : `${displayRemaining} мин`}
             </span>
           </div>
         </div>
