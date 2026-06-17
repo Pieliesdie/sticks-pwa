@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import AddModal from '../components/AddModal';
 
-const TAG_OPTIONS = ['Стресс', 'Кофе', 'Скука', 'Привычка', 'Перекур'];
+const TAG_OPTIONS = [
+  { label: 'Стресс', icon: '🤯' },
+  { label: 'Кофе', icon: '☕' },
+  { label: 'Скука', icon: '🥱' },
+  { label: 'Привычка', icon: '🔄' },
+  { label: 'Перекур', icon: '🚬' }
+];
 
 export default function HomePage({ entries, intervalMinutes, onAdd, showSnack, timeSinceLast, moneySpentToday, moneySpentTotal, dailyLimit }) {
   const [showModal, setShowModal] = useState(false);
+  const [showTagSheet, setShowTagSheet] = useState(false);
   const [now, setNow] = useState(Date.now());
-  const [selectedTag, setSelectedTag] = useState(null);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -36,10 +42,16 @@ export default function HomePage({ entries, intervalMinutes, onAdd, showSnack, t
   const offsetLimit = C * (1 - progressLimit);
   const isOverLimit = todayCount >= dailyLimit;
 
-  function addNow() { 
+  function handleAddClick() { 
     if (navigator.vibrate) navigator.vibrate(50);
-    onAdd(new Date(), selectedTag); 
-    showSnack('Добавлено 🚬', ''); 
+    setShowTagSheet(true);
+  }
+
+  function confirmAdd(tagLabel) {
+    if (navigator.vibrate) navigator.vibrate(50);
+    onAdd(new Date(), tagLabel);
+    setShowTagSheet(false);
+    showSnack('Добавлено 🚬', '');
   }
 
   function checkTimer() {
@@ -51,12 +63,13 @@ export default function HomePage({ entries, intervalMinutes, onAdd, showSnack, t
 
   return (
     <div className="page home-page">
-      {/* Progress rings card */}
-      <div className="status-card">
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-          {/* Main Timer Ring */}
-          <div className="ring-wrap" style={{ flexShrink: 0 }}>
-            <svg width="128" height="128" viewBox="0 0 128 128">
+      <div className="page-content">
+        {/* Progress rings card */}
+        <div className="status-card">
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            {/* Main Timer Ring */}
+            <div className="ring-wrap" style={{ flexShrink: 0 }}>
+              <svg width="128" height="128" viewBox="0 0 128 128">
               {!canSmoke && (
                 <>
                   <circle
@@ -161,21 +174,9 @@ export default function HomePage({ entries, intervalMinutes, onAdd, showSnack, t
         </div>
       </div>
 
-      {/* Tag selector */}
-      <div className="tag-selector" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', margin: '12px 0' }}>
-        {TAG_OPTIONS.map(t => (
-          <button
-            key={t}
-            className={selectedTag === t ? 'btn-filled' : 'btn-outlined'}
-            style={{ borderRadius: 16, padding: '4px 12px', fontSize: 13 }}
-            onClick={() => setSelectedTag(prev => prev === t ? null : t)}
-          >{t}</button>
-        ))}
-      </div>
-
       {/* Buttons */}
-      <div className="home-actions">
-        <button className="btn-filled home-btn" onClick={addNow}>
+      <div className="home-actions" style={{ marginTop: '16px' }}>
+        <button className="btn-filled home-btn" onClick={handleAddClick}>
           <span>＋</span> Добавить сейчас
         </button>
         <button className="btn-tonal home-btn" onClick={() => setShowModal(true)}>
@@ -185,8 +186,41 @@ export default function HomePage({ entries, intervalMinutes, onAdd, showSnack, t
           <span>🔔</span> Проверить таймер
         </button>
       </div>
+      </div>
 
-      <AddModal open={showModal} onClose={() => setShowModal(false)} onAdd={onAdd} tag={selectedTag} />
+      <AddModal open={showModal} onClose={() => setShowModal(false)} onAdd={onAdd} tag={null} />
+
+      {/* Tag Bottom Sheet */}
+      <div className={`modal-overlay ${showTagSheet ? 'show' : ''}`} onClick={() => setShowTagSheet(false)}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
+          <div className="modal-header">
+            <h2>Почему курим?</h2>
+            <p>Выбери причину или пропусти</p>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '12px', margin: '16px 0' }}>
+            {TAG_OPTIONS.map(t => (
+              <button
+                key={t.label}
+                className="btn-tonal"
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 8px', borderRadius: '20px', border: 'none', cursor: 'pointer' }}
+                onClick={() => confirmAdd(t.label)}
+              >
+                <span style={{ fontSize: '28px' }}>{t.icon}</span>
+                <span style={{ fontSize: '11px', fontWeight: '600' }}>{t.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button 
+            className="btn-outlined home-btn" 
+            style={{ width: '100%' }}
+            onClick={() => confirmAdd(null)}
+          >
+            Пропустить
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

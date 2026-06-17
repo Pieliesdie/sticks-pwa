@@ -88,45 +88,45 @@ export default function HistoryPage({ entries, onDelete }) {
                     </div>
                   </div>
 
-                  <div className="day-entries">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th className="left-align" style={{ width: 40 }}>№</th>
-                          <th>Время</th>
-                          <th style={{ width: 48 }}></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {list.map((e, i) => {
-                          const gapMinutes = i < list.length - 1
-                            ? Math.round((list[i].date.getTime() - list[i + 1].date.getTime()) / 60000)
-                            : null;
-                          return (
-                          <tr key={e.id} style={{ animationDelay: `${i * 25}ms` }}>
-                            <td className="left-align">
-                              <span className="entry-number">{list.length - i}</span>
-                            </td>
-                            <td>
-                              <span className="time-badge">
-                                {new Date(e.iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                              {e.tag && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>[{e.tag}]</span>}
-                              {gapMinutes !== null && (
-                                <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }}>
-                                  ↑{gapMinutes} мин
-                                </span>
-                              )}
-                            </td>
-                            <td className="right-align">
-                              <button className="btn-delete" onClick={() => onDelete(e.id)}>✕</button>
-                            </td>
-                          </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                   <div className="day-entries">
+                     <table>
+                       <thead>
+                         <tr>
+                           <th className="left-align" style={{ width: 40 }}>№</th>
+                           <th>Время</th>
+                           <th style={{ width: 48 }}></th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {list.map((e, i) => {
+                           const gapMinutes = i < list.length - 1
+                             ? Math.round((list[i].date.getTime() - list[i + 1].date.getTime()) / 60000)
+                             : null;
+                           return (
+                           <tr key={e.id} style={{ animationDelay: `${i * 25}ms` }}>
+                             <td className="left-align">
+                               <span className="entry-number">{list.length - i}</span>
+                             </td>
+                             <td>
+                               <span className="time-badge">
+                                 {new Date(e.iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                               </span>
+                               {e.tag && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>[{e.tag}]</span>}
+                               {gapMinutes !== null && (
+                                 <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }}>
+                                   ↑ {gapMinutes} мин
+                                 </span>
+                               )}
+                             </td>
+                             <td className="right-align">
+                               <button className="btn-delete" onClick={() => onDelete(e.id)}>✕</button>
+                             </td>
+                           </tr>
+                           );
+                         })}
+                       </tbody>
+                     </table>
+                   </div>
                 </div>
               )}
             </div>
