@@ -1,4 +1,4 @@
-const CACHE = 'sticks-pwa-v3';
+const CACHE = 'sticks-pwa-v5';
 
 const ASSETS = [
   '/sticks-pwa/',
@@ -24,16 +24,23 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Stale-while-revalidate strategy
   e.respondWith(
     caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(r => {
-        if (r.ok) {
-          const clone = r.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+      const fetchPromise = fetch(e.request).then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
         }
-        return r;
-      }).catch(() => caches.match('/sticks-pwa/'));
+        return response;
+      }).catch(() => {
+        // Fallback for offline if not in cache (e.g., navigation)
+        if (e.request.mode === 'navigate') {
+          return caches.match('/sticks-pwa/');
+        }
+      });
+
+      return cached || fetchPromise;
     })
   );
 });
