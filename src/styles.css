@@ -935,3 +935,32 @@ html,
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-primary: #85d2e7;
+    --md-on-primary: #00353f;
+    --md-primary-container: #004e5b;
+    --md-on-primary-container: #a5eeff;
+    --md-secondary: #b1cbd3;
+    --md-on-secondary: #1c343a;
+    --md-secondary-container: #334a50;
+    --md-on-secondary-container: #cde7ef;
+    --md-tertiary: #bec5eb;
+    --md-on-tertiary: #262f4d;
+    --md-tertiary-container: #3c4565;
+    --md-on-tertiary-container: #dbe1ff;
+    --md-error: #ffb4ab;
+    --md-on-error: #690005;
+    --md-error-container: #93000a;
+    --md-on-error-container: #ffdad6;
+    --md-surface: #0e1416;
+    --md-surface-variant: #3f484b;
+    --md-on-surface: #dee3e5;
+    --md-on-surface-variant: #bfc8cb;
+    --md-outline: #899295;
+    --md-outline-variant: #3f484b;
+    --md-s1: color-mix(in srgb, var(--md-primary) 5%, var(--md-surface));
+    --md-s2: color-mix(in srgb, var(--md-primary) 8%, var(--md-surface));
+    --md-s3: color-mix(in srgb, var(--md-primary) 11%, var(--md-surface));
+  }
+}

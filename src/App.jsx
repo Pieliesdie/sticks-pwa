@@ -9,6 +9,9 @@ import SettingsPage from './pages/SettingsPage';
 export default function SticksApp() {
   const STORAGE_KEY = 'smoked_sticks_entries_v7';
   const INTERVAL_KEY = 'sticks_interval_minutes';
+  const PRICE_KEY = 'sticks_pack_price';
+  const PER_PACK_KEY = 'sticks_per_pack';
+  const DAILY_LIMIT_KEY = 'sticks_daily_limit';
 
   const [page, setPage] = useState('home');
   const [entries, setEntries] = useState(() => {
@@ -25,13 +28,25 @@ export default function SticksApp() {
   const [intervalMinutes, setIntervalMinutes] = useState(
     () => Number(localStorage.getItem(INTERVAL_KEY) || '60')
   );
+  const [packPrice, setPackPrice] = useState(
+    () => Number(localStorage.getItem(PRICE_KEY) || '200')
+  );
+  const [sticksPerPack, setSticksPerPack] = useState(
+    () => Number(localStorage.getItem(PER_PACK_KEY) || '20')
+  );
+  const [dailyLimit, setDailyLimit] = useState(
+    () => Number(localStorage.getItem(DAILY_LIMIT_KEY) || '10')
+  );
   const [snack, setSnack] = useState({ msg: '' });
   const snackTimer = useRef(null);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.map(e => ({ iso: e.iso, id: e.id })))); } catch { }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.map(e => ({ iso: e.iso, id: e.id, tag: e.tag || null })))); } catch { }
   }, [entries]);
   useEffect(() => { localStorage.setItem(INTERVAL_KEY, String(intervalMinutes)); }, [intervalMinutes]);
+  useEffect(() => { localStorage.setItem(PRICE_KEY, String(packPrice)); }, [packPrice]);
+  useEffect(() => { localStorage.setItem(PER_PACK_KEY, String(sticksPerPack)); }, [sticksPerPack]);
+  useEffect(() => { localStorage.setItem(DAILY_LIMIT_KEY, String(dailyLimit)); }, [dailyLimit]);
 
   function showSnack(msg) {
     clearTimeout(snackTimer.current);
@@ -39,11 +54,12 @@ export default function SticksApp() {
     snackTimer.current = setTimeout(() => setSnack({ msg: '' }), 3000);
   }
 
-  function addEntry(date) {
+  function addEntry(date, tag) {
     setEntries(prev => [{
-      id: crypto?.randomUUID?.() ?? String(Date.now()),
+      id: window.crypto?.randomUUID?.() ?? String(Date.now()),
       iso: date.toISOString(), date,
-      pretty: date.toLocaleString('ru-RU')
+      pretty: date.toLocaleString('ru-RU'),
+      tag: tag || null
     }, ...prev]);
   }
 
@@ -65,6 +81,15 @@ export default function SticksApp() {
   const titles = { home: 'Стики', history: 'История', settings: 'Настройки' };
   const todayCount = entries.filter(e => { const d = new Date(); d.setHours(0, 0, 0, 0); return e.date >= d; }).length;
 
+  const sorted = [...entries].sort((a, b) => b.date - a.date);
+  const timeSinceLast = sorted.length > 0
+    ? Math.round((Date.now() - sorted[0].date.getTime()) / 60000)
+    : null;
+
+  const costPerStick = sticksPerPack > 0 ? packPrice / sticksPerPack : 0;
+  const moneySpentToday = todayCount * costPerStick;
+  const moneySpentTotal = entries.length * costPerStick;
+
   return (
     <div className="app-root">
       <div className="top-bar">
@@ -75,11 +100,11 @@ export default function SticksApp() {
 
       <div className="page-container">
         {page === 'home' && (
-          <HomePage entries={entries} intervalMinutes={intervalMinutes} onAdd={addEntry} showSnack={showSnack} />
+          <HomePage entries={entries} intervalMinutes={intervalMinutes} onAdd={addEntry} showSnack={showSnack} timeSinceLast={timeSinceLast} moneySpentToday={moneySpentToday} moneySpentTotal={moneySpentTotal} dailyLimit={dailyLimit} />
         )}
         {page === 'history' && <HistoryPage entries={entries} onDelete={deleteEntry} />}
         {page === 'settings' && (
-          <SettingsPage intervalMinutes={intervalMinutes} setIntervalMinutes={setIntervalMinutes} entries={entries} onClear={clearAll} />
+          <SettingsPage intervalMinutes={intervalMinutes} setIntervalMinutes={setIntervalMinutes} entries={entries} onClear={clearAll} packPrice={packPrice} setPackPrice={setPackPrice} sticksPerPack={sticksPerPack} setSticksPerPack={setSticksPerPack} dailyLimit={dailyLimit} setDailyLimit={setDailyLimit} />
         )}
       </div>
 

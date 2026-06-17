@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function AddModal({ open, onClose, onAdd }) {
+export default function AddModal({ open, onClose, onAdd, tag }) {
   const [customDate, setCustomDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [customTime, setCustomTime] = useState(() => {
     const n = new Date();
@@ -10,7 +10,7 @@ export default function AddModal({ open, onClose, onAdd }) {
     const [h, m] = customTime.split(':').map(Number);
     const [y, mo, d] = customDate.split('-').map(Number);
     const date = new Date(y, mo - 1, d, h, m);
-    if (!isNaN(date)) { onAdd(date); onClose(); }
+    if (!isNaN(date)) { onAdd(date, tag); onClose(); }
   }
   if (!open) return null;
   return (
